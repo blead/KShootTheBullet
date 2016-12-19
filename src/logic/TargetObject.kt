@@ -5,7 +5,7 @@ import lib.IRenderableObject
 import lib.MotionUtility
 import lib.RandomUtility
 
-class TargetObject() {
+abstract class TargetObject(protected val radius: Int, protected var movingDuration: Int, private val _z: Int) : IRenderableObject {
     protected var x: Int
     protected var y: Int
     var isDestroyed = false
@@ -85,4 +85,8 @@ class TargetObject() {
         y = coordinates[1]
         movingDurationCounter++
     }
+
+    override fun getZ() = _z
+
+    override fun isVisible() = !isDestroyed
 }

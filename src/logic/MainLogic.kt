@@ -47,7 +47,7 @@ class MainLogic : IRenderableHolder, IGameLogic {
 
     override fun logicUpdate() {
         if (InputUtility.isTypeEnter())
-            /* fill code 1 */
+            player.pause = !player.pause
 
         if (player.pause)
             return
@@ -71,15 +71,20 @@ class MainLogic : IRenderableHolder, IGameLogic {
         if (!player.isDisplayingArea(InputUtility.getMouseX(), InputUtility.getMouseY())) {
             var shoot = false
             if ((InputUtility.isMouseLeftClicked() || InputUtility.isTypeSpace()) && player.currentGun.canShoot()) {
-                /* fill code 2 */
+                player.currentGun.shoot()
                 onScreenAnimation.add(DrawingUtility.createShootingAnimationAt(InputUtility.getMouseX(), InputUtility.getMouseY()))
                 shoot = true
             }
             target = getTopMostTargetAt(InputUtility.getMouseX(), InputUtility.getMouseY())
-            /* fill code 3 */
+            if (target is CollectibleObject) {
+                target.grab(player)
+                grabbedObject = target
+            } else if (shoot && target is ShootableObject) {
+                target.hit(player)
+            }
 
             if (shoot && player.currentGun is SpecialGun && (player.currentGun as SpecialGun).bulletQuantity <= 0) {
-                /* fill code 4 */
+                player.currentGun = Gun(1)
             }
         }
         /* update objects */
@@ -104,8 +109,14 @@ class MainLogic : IRenderableHolder, IGameLogic {
             /* random moving duration */
             val movingDuration = RandomUtility.random(ConfigurableOption.objectMinDuration, ConfigurableOption.objectMaxDuration)
 
-            /* randomly create target */
-            /* fill code */
+            /* random target type */
+            val rand = RandomUtility.random(1, 100)
+            when(rand) {
+                in 1..15 -> onScreenObject.add(if (player.currentGun is SpecialGun) ItemBullet(movingDuration, zCounter) else ItemSpecialGun(movingDuration, zCounter))
+                in 16..35 -> onScreenObject.add(SplitterTarget(40, movingDuration, zCounter, onScreenObject))
+                in 36..70 -> onScreenObject.add(SmallTarget(15, movingDuration, zCounter))
+                else -> onScreenObject.add(SimpleTarget(15, movingDuration, zCounter))
+            }
 
             /* Increase z counter (so the next object will be created on top of the previous one) */
             zCounter++
